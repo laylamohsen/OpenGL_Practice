@@ -46,8 +46,9 @@ void generateSphere(std::vector<GLfloat>& vertices, std::vector<GLuint>& indices
             vertices.push_back(ny);
             vertices.push_back(nz);
 
-            s = (float)j / sectorCount;
-            t = (float)i / stackCount;
+            // Adjust texture coordinates
+            s = 1.0-((float)j / sectorCount);
+            t = ((float)i / stackCount);  // Flip t to orient correctly
             vertices.push_back(s);
             vertices.push_back(t);
         }
@@ -73,6 +74,7 @@ void generateSphere(std::vector<GLfloat>& vertices, std::vector<GLuint>& indices
         }
     }
 }
+
 
 int main()
 {
@@ -121,6 +123,7 @@ int main()
     Texture bucky(("/Users/layla/Desktop/OpenGL_Tutorial/OpenGL_Tutorial/Resources/Textures/earth.png"), GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE);
     bucky.texUnit(shaderProgram, "tex0", 0);
 
+
     float rotation = 0.0f;
     double prevTime = glfwGetTime();
     glEnable(GL_DEPTH_TEST);
@@ -140,8 +143,17 @@ int main()
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 proj = glm::mat4(1.0f);
 
-        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.0f));
+        // Adjusted view matrix to position the camera for Earth viewing
+        float cameraRadius = 2.0f;
+        float cameraHeight = 0.5f;
+
+        float cameraX = cameraRadius * cos(glm::radians(rotation));
+        float cameraY = cameraRadius * sin(glm::radians(rotation));
+
+        view = glm::lookAt(glm::vec3(cameraX, cameraY, cameraHeight),
+                           glm::vec3(0.0f, 0.0f, 0.0f),
+                           glm::vec3(0.0f, 0.0f, 1.0f));
+
         proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 100.0f);
 
         GLuint modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
@@ -157,6 +169,7 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
 
     VAO1.Delete();
     VBO1.Delete();
