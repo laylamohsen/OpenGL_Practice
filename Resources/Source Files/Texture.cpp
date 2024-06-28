@@ -1,12 +1,6 @@
-//
-//  Texture.cpp
-//  OpenGL_Tutorial
-//
-//  Created by layla on 25/06/2024.
-//
+#include"Texture.hpp"
 
-#include "Texture.hpp"
-Texture::Texture(const char* image, GLenum texType, GLenum slot, GLenum format, GLenum pixelType)
+Texture::Texture(const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType)
 {
     // Assigns the type of the texture ot the texture object
     type = texType;
@@ -14,14 +8,15 @@ Texture::Texture(const char* image, GLenum texType, GLenum slot, GLenum format, 
     // Stores the width, height, and the number of color channels of the image
     int widthImg, heightImg, numColCh;
     // Flips the image so it appears right side up
-//    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(true);
     // Reads the image from a file and stores it in bytes
     unsigned char* bytes = stbi_load(image, &widthImg, &heightImg, &numColCh, 0);
 
     // Generates an OpenGL texture object
     glGenTextures(1, &ID);
     // Assigns the texture to a Texture Unit
-    glActiveTexture(slot);
+    glActiveTexture(GL_TEXTURE0 + slot);
+    unit = slot;
     glBindTexture(texType, ID);
 
     // Configures the type of algorithm that is used to make the image smaller or bigger
@@ -37,7 +32,7 @@ Texture::Texture(const char* image, GLenum texType, GLenum slot, GLenum format, 
     // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, flatColor);
 
     // Assigns the image to the OpenGL Texture object
-    glTexImage2D(texType, 0, GL_RGB, widthImg, heightImg, 0, format, pixelType, bytes);
+    glTexImage2D(texType, 0, GL_RGBA, widthImg, heightImg, 0, format, pixelType, bytes);
     // Generates MipMaps
     glGenerateMipmap(texType);
 
@@ -60,6 +55,7 @@ void Texture::texUnit(Shader& shader, const char* uniform, GLuint unit)
 
 void Texture::Bind()
 {
+    glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(type, ID);
 }
 
